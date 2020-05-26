@@ -3,19 +3,36 @@
 #[macro_use]
 extern crate rocket;
 
+#[macro_use]
+extern crate lazy_static;
+
 use rocket::http::RawStr;
 use rocket::request::{Form, FormDataError, FormError};
 use rocket::response::NamedFile;
-
+use std::collections::HashMap;
+use std::sync::Mutex;
 
 #[derive(Debug, FromForm)]
 pub struct Todo {
     pub description: String,
 }
+lazy_static! {
+    static ref HASHMAP: Mutex<HashMap<usize, Form<Todo>>> = Mutex::new({
+        let mut m = HashMap::new();
+        m
+    });
+}
+static mut key: usize = 0;
 
-#[post("/add", data = "<todo>")]
-fn testPost(todo: Form<Todo>) {
-    println!("{:?}", todo)
+#[post("/", data = "<todo>")]
+fn testPost(todo: Form<Todo>) -> Option<NamedFile> {
+    let mut map = HASHMAP.lock().unwrap();
+    unsafe {
+        key += 1;
+        map.insert(key, todo);
+        println!("{:?}", map);
+        NamedFile::open("static/index.html").ok()
+    }
 }
 #[get("/")]
 fn index() -> Option<NamedFile> {
