@@ -34,6 +34,28 @@ fn testPost(todo: Form<Todo>) -> Option<NamedFile> {
         NamedFile::open("static/index.html").ok()
     }
 }
+
+#[delete("/<id>")]
+fn testDelete(id: usize) -> Option<NamedFile> {
+    let mut map = HASHMAP.lock().unwrap();
+    unsafe {
+       
+        map.remove(&id);
+        println!("{:?}", map);
+        NamedFile::open("static/index.html").ok()
+    }
+}
+
+// #[put("/<id>/<value>")]
+// fn testPut(id: usize, value: String) -> Option<NamedFile> {
+//     let mut map = HASHMAP.lock().unwrap();
+//     unsafe {
+       
+//         map.insert(&id, value);
+//         println!("{:?}", map);
+//         NamedFile::open("static/index.html").ok()
+//     }
+// }
 #[get("/")]
 fn index() -> Option<NamedFile> {
     NamedFile::open("static/index.html").ok()
